@@ -5,12 +5,66 @@
 FROM continuumio/miniconda3:4.8.2-alpine
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
+
+# add time
+RUN apk add tzdata \
+    && ls /usr/share/zoneinfo/Europe/London \
+    && cp /usr/share/zoneinfo/Europe/London /etc/localtime \
+    && echo "Europe/London" >  /etc/timezone \
+    && date \
+    && apk del tzdata
+
+ARG NB_USER="Jeremy"
+ARG NB_UID="1000"
+ARG NB_GID="100"
+
+
+ENV SHELL=/bin/bash \
+    NB_USER=$NB_USER \
+    NB_UID=$NB_UID \
+    NB_GID=$NB_GID \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+ENV PATH=$CONDA_DIR/bin:$PATH \
+    HOME=/home/$NB_USER
+
 # name of envrionment
-#RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
-#    && apk --update add bash 
-COPY environment.yml /root/
-ARG conda_env=uclgeog
-RUN /opt/conda/bin/conda env create -f /root/environment.yml \
+RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories &&\
+    apk --update add bash &&\
+    echo "### Cleanup unneeded files" && \
+    rm -rf /usr/include/c++/*/java && \
+    rm -rf /usr/include/c++/*/javax && \
+    rm -rf /usr/include/c++/*/gnu/awt && \
+    rm -rf /usr/include/c++/*/gnu/classpath && \
+    rm -rf /usr/include/c++/*/gnu/gcj && \
+    rm -rf /usr/include/c++/*/gnu/java && \
+    rm -rf /usr/include/c++/*/gnu/javax
+
+#RUN /usr/sbin/adduser --home /home/$NB_USER --disabled-password --gecos --shell /bin/bash --uid $NB_UID
+
+COPY fix-permissions /usr/local/bin/fix-permissions
+
+RUN /usr/sbin/adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell /bin/bash \
+    --home "/home/$NB_USER" \
+    --uid "$NB_UID" "$NB_USER" \
+    && chown $NB_USER:$NB_GID  /opt/conda \
+    && bash  /usr/local/bin/fix-permissions $HOME \
+    && bash  /usr/local/bin/fix-permissions $CONDA_DIR 
+    
+
+#RUN bash  /usr/local/bin/fix-permissions $HOME
+#RUN chmod 0755 $HOME/environment.yml
+
+USER $NB_UID
+WORKDIR $HOME   
+
+COPY environment.yml $HOME
+RUN pwd && ls -lah
+RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
     && /opt/conda/bin/conda clean -afy \
     && find /opt/conda/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
