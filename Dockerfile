@@ -52,7 +52,7 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
         npm cache clean --force && \
         rm -rf $HOME/.node-gyp && \
         rm -rf $HOME/.local && \
-    fix-permissions $CONDA_DIR $HOME
+    /usr/local/bin/fix-permissions $CONDA_DIR $HOME
      
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
