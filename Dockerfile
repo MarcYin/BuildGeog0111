@@ -6,9 +6,9 @@ FROM continuumio/miniconda3:4.8.2-alpine
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
 # name of envrionment
-COPY fix-permissionss /root/
+COPY fix-permissions /root/
 RUN chmod a+rx /root/fix-permissions && \
-    /root/fix-permissions $CONDA_DIR $HOME
+    bash /root/fix-permissions $CONDA_DIR $HOME
 COPY environment.yml /root/
 ARG conda_env=uclgeog
 RUN /opt/conda/bin/conda env create -f /root/environment.yml \
