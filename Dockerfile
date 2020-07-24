@@ -6,7 +6,7 @@ FROM continuumio/miniconda3:4.8.2-alpine
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
 # name of envrionment
-COPY fix-permissions /root/
+COPY fix-permissionss /root/
 RUN chmod a+rx /root/fix-permissions && \
     /root/fix-permissions $CONDA_DIR $HOME
 COPY environment.yml /root/
