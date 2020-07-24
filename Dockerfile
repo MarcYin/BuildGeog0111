@@ -6,9 +6,13 @@ FROM continuumio/miniconda3:4.8.2-alpine
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
 # name of envrionment
-COPY fix-permissions /root/
-RUN chmod a+rx /root/fix-permissions && \
-    bash /root/fix-permissions $CONDA_DIR $HOME
+RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
+    && apk --update add bash 
+ARG NB_GID="100"
+COPY fix-permissions /usr/local/bin/fix-permissions
+RUN chmod a+rx /usr/local/bin/fix-permissions \
+    &&bash /usr/local/bin/fix-permissions $HOME \
+    &&bash /usr/local/bin/fix-permissions $CONDA_DIR
 COPY environment.yml /root/
 ARG conda_env=uclgeog
 RUN /opt/conda/bin/conda env create -f /root/environment.yml \
