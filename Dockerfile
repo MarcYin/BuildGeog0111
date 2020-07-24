@@ -51,4 +51,4 @@ RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
 # Run jupyter notebook
 #RUN jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
-RUN jupyter trust notebooks/*ipynb 
+RUN jupyter trust *ipynb 
