@@ -6,9 +6,6 @@ FROM continuumio/miniconda3:4.8.2-alpine
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
      
-COPY fix-permissions /root/
-RUN chmod a+rx /root/fix-permissions && \
-    cp /root/fix-permissions /usr/local/bin/fix-permissions                                                                                   
      
 # name of envrionment
 COPY environment.yml /root/
@@ -51,9 +48,11 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
         jlpm cache clean && \
         npm cache clean --force && \
         rm -rf $HOME/.node-gyp && \
-        rm -rf $HOME/.local && \
-    /usr/local/bin/fix-permissions $CONDA_DIR $HOME
+        rm -rf $HOME/.local
      
+COPY fix-permissions /root/
+RUN chmod a+rx /root/fix-permissions && \
+    /root/fix-permissions $CONDA_DIR $HOME
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
