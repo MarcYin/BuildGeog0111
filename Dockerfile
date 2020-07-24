@@ -100,6 +100,8 @@ WORKDIR $HOME
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
+RUN /usr/local/bin/fix-permissions $HOME\
+    && bash  /usr/local/bin/fix-permissions $CONDA_DIR
 # Run jupyter notebook
 #RUN jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
 RUN jupyter trust *ipynb 
