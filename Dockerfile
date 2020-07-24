@@ -49,6 +49,7 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
     jupyter lab build && \
         jupyter lab clean && \
         jlpm cache clean && \
+        npm cache clean --force && \
         rm -rf $HOME/.node-gyp && \
         rm -rf $HOME/.local && \
     fix-permissions $CONDA_DIR $HOME
