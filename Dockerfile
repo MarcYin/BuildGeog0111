@@ -6,13 +6,8 @@ FROM continuumio/miniconda3:4.8.2-alpine
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
 # name of envrionment
-RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
-    && apk --update add bash 
-ARG NB_GID="100"
-COPY fix-permissions /usr/local/bin/fix-permissions
-RUN chmod a+rx /usr/local/bin/fix-permissions \
-    &&bash /usr/local/bin/fix-permissions $HOME \
-    &&bash /usr/local/bin/fix-permissions $CONDA_DIR
+#RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
+#    && apk --update add bash 
 COPY environment.yml /root/
 ARG conda_env=uclgeog
 RUN /opt/conda/bin/conda env create -f /root/environment.yml \
@@ -21,10 +16,6 @@ RUN /opt/conda/bin/conda env create -f /root/environment.yml \
     && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
-# install  jupyterthemes
-#RUN python -m pip install jupyterthemes
-#RUN python -m pip install --upgrade jupyterthemes
-#RUN python -m pip install jupyter_contrib_nbextensions
 RUN jupyter contrib nbextension install --user
 # enable the Nbextensions
 RUN jupyter nbextension enable contrib_nbextensions_help_item/main
@@ -52,11 +43,12 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
         jupyter lab clean && \
         jlpm cache clean && \
         npm cache clean --force && \
-        rm -rf $HOME/.node-gyp && \
-        rm -rf $HOME/.local
+        rm -rf /root/.node-gyp && \
+        rm -rf /root/.local
      
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
 # Run jupyter notebook
-RUN jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
+#RUN jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
+RUN jupyter trust notebooks/*ipynb 
