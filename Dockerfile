@@ -41,34 +41,17 @@ RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/re
     rm -rf /usr/include/c++/*/gnu/java && \
     rm -rf /usr/include/c++/*/gnu/javax
 
-#RUN /usr/sbin/adduser --home /home/$NB_USER --disabled-password --gecos --shell /bin/bash --uid $NB_UID
-
-COPY fix-permissions /usr/local/bin/fix-permissions
-
-RUN /usr/sbin/adduser \
-    --disabled-password \
-    --gecos "" \
-    --shell /bin/bash \
-    --home "/home/$NB_USER" \
-    --uid "$NB_UID" "$NB_USER" \
-    && chown $NB_USER:$NB_GID  /opt/conda \
-    && bash  /usr/local/bin/fix-permissions $HOME \
-    && bash  /usr/local/bin/fix-permissions $CONDA_DIR 
-    
-
 #RUN bash  /usr/local/bin/fix-permissions $HOME
 #RUN chmod 0755 $HOME/environment.yml
 
-USER $NB_UID
-WORKDIR $HOME   
 
-COPY environment.yml $HOME
-RUN pwd && ls -lah
-RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
+COPY environment.yml /root/
+RUN /opt/conda/bin/conda env create -f /root/environment.yml \
     && /opt/conda/bin/conda clean -afy \
     && find /opt/conda/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
+
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
 RUN jupyter contrib nbextension install --user
 # enable the Nbextensions
@@ -99,7 +82,21 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
         npm cache clean --force && \
         rm -rf /root/.node-gyp && \
         rm -rf /root/.local
-     
+
+COPY fix-permissions /usr/local/bin/fix-permissions
+
+RUN /usr/sbin/adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell /bin/bash \
+    --home "/home/$NB_USER" \
+    --uid "$NB_UID" "$NB_USER" \
+    && chown $NB_USER:$NB_GID  /opt/conda \
+    && bash  /usr/local/bin/fix-permissions $HOME \
+    && bash  /usr/local/bin/fix-permissions $CONDA_DIR
+
+USER $NB_UID
+WORKDIR $HOME   
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
