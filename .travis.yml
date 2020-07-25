@@ -7,4 +7,4 @@ before_install:
   - docker build -t geog0111 .
   - docker run -d -p 127.0.0.1:80:4567 geog0111 /bin/sh -c "cd /root/; ls -lah"
 script:
-  - bundle exec rake test
+  - echo 'Done!'
