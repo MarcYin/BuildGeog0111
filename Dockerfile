@@ -30,7 +30,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH \
     HOME=/home/$NB_USER
 
 # name of envrionment
-RUN apk --update add bash &&\
+RUN apk --update add bash&&\
     echo "### Cleanup unneeded files" && \
     rm -rf /usr/include/c++/*/java && \
     rm -rf /usr/include/c++/*/javax && \
@@ -83,6 +83,7 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
         rm -rf /root/.local
 
 COPY fix-permissions /usr/local/bin/fix-permissions
+RUN chmod a+rx /usr/local/bin/fix-permissions
 
 RUN /usr/sbin/adduser \
     --disabled-password \
@@ -91,8 +92,8 @@ RUN /usr/sbin/adduser \
     --home "/home/$NB_USER" \
     --uid "$NB_UID" "$NB_USER" \
     && chown $NB_USER:$NB_GID  /opt/conda \
-    && bash  /usr/local/bin/fix-permissions $HOME \
-    && bash  /usr/local/bin/fix-permissions $CONDA_DIR
+    && /usr/local/bin/fix-permissions $HOME \
+    && /usr/local/bin/fix-permissions $CONDA_DIR
 
 USER $NB_UID
 WORKDIR $HOME   
