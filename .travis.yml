@@ -4,14 +4,14 @@ services:
 before_script:
   - DOCKER_USER=f0xy
 script:
-  - docker build -t geog0111 .
+  - docker build -t foxy/geog0111 .
 after_script:
   - docker images
 deploy:
   provider: script
   script: 
       - docker login -u $DOCKER_USER -p $REGISTRY_PASS
-      - docker tag geog0111 $DOCKER_USER/:0.0.1
-      - docker push $DOCKER_USER/geog0111:0.0.1
-      - docker tag geog0111 $DOCKER_USER/geog0111:latest
-      - docker push $DOCKER_USER/geog0111:latest
+      - docker tag foxy/geog0111 foxy/geog0111:0.0.1
+      - docker push foxy/geog0111:0.0.1
+      - docker tag foxy/geog0111 foxy/geog0111:latest
+      - docker push foxy/geog0111:latest
