@@ -1,24 +1,15 @@
 language: ruby
-
+sudo: required
 services:
   - docker
-
-env:
-  global:
-    - IMAGE_NAME=foxy/geog0111
-    - REGISTRY_USER=f0xy
-
 before_script:
-  - version="0.0.1"
+  - DOCKER_USER=f0xy
 script:
-  - docker build -t foxy/geog0111 .
-  - docker run -d -p 8888:8888 foxy/geog0111 /bin/sh -c "ls -lah"
-after_script:
-  - docker images
-before_deploy:
-  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-deploy:
-  provider: script
-  script: docker push "${IMAGE_NAME}"
-  on:
-    branch: master
+  - npm test
+  - docker build -t geog0111 .
+after_success:
+  - docker login -u $DOCKER_USER -p $REGISTRY_PASS
+  - docker tag back $DOCKER_USER/:$TRAVIS_BUILD_NUMBER
+  - docker push $DOCKER_USER/geog0111:$TRAVIS_BUILD_NUMBER
+  - docker tag back $DOCKER_USER/geog0111:latest
+  - docker push $DOCKER_USER/geog0111:latest
