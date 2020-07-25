@@ -115,12 +115,13 @@ CMD ["start-notebook.sh"]
 #     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh -O /usr/local/bin/start-notebook.sh \
 #     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py -O /etc/jupyter/jupyter_notebook_config.py
 
-RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh \
-    && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh \
-    && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh \
-    && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py
-COPY start.sh start-notebook.sh start-singleuser.sh /usr/local/bin/
-COPY jupyter_notebook_config.py /etc/jupyter/
+ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh /usr/local/bin/
+ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh /usr/local/bin/
+ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh /usr/local/bin/
+ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py /etc/jupyter/
+
+# COPY start.sh start-notebook.sh start-singleuser.sh /usr/local/bin/
+# COPY jupyter_notebook_config.py /etc/jupyter/
 
 # RUN bash /usr/local/bin/start-notebook.sh
 #Copy local files as late as possible to avoid cache busting
