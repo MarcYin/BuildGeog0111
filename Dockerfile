@@ -30,8 +30,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH \
     HOME=/home/$NB_USER
 
 # name of envrionment
-RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories &&\
-    apk --update add bash &&\
+RUN apk --update add bash &&\
     echo "### Cleanup unneeded files" && \
     rm -rf /usr/include/c++/*/java && \
     rm -rf /usr/include/c++/*/javax && \
@@ -100,8 +99,7 @@ WORKDIR $HOME
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
-RUN /usr/local/bin/fix-permissions $HOME\
-    && bash  /usr/local/bin/fix-permissions $CONDA_DIR
+
 # Run jupyter notebook
 #RUN jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
 RUN jupyter trust *ipynb 
