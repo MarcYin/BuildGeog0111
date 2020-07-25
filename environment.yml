@@ -3,16 +3,46 @@ channels:
   - conda-forge
 dependencies:
   - python>=3.7
+  - libgdal
+  - geopandas
+  - rasterio
+  - scipy
+  - gdal
+  - beautifulsoup4
+  - numpy
+  - scikit-image
+  - netcdf4
+  - scikit-learn
   - matplotlib
+  - pandas
+  - shapely
   - ipyleaflet
+  - pytest
+  - seaborn
+  - hdf5
+  - iris
+  - flake8
   - ipython
   - ipywidgets
+  - nbdime
+  - xarray
+  - dask
+  - black
+  - folium
   - jupyter_console
+  - pandocfilters
   - nbconvert
   - jupyterlab
   - nbformat
+  - pandoc
+  - nco
+  - pyephem
+  - libnetcdf
   - git
+  - sphinx
   - ipykernel
+  - xeus-python
+  - ipympl
   - pip
   - jupyter_contrib_nbextensions
   - jupyterthemes

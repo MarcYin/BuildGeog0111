@@ -108,26 +108,29 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
 EXPOSE 8888
 
 # Configure container startup
-CMD ["start-notebook.sh"]
+CMD ["/usr/local/bin/start-notebook.sh"]
 
 # RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh -O /usr/local/bin/start-singleuser.sh \
 #     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh -O /usr/local/bin/start.sh \
 #     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh -O /usr/local/bin/start-notebook.sh \
 #     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py -O /etc/jupyter/jupyter_notebook_config.py
 
-#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh /usr/local/bin/
-#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh /usr/local/bin/
-#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh /usr/local/bin/
-#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py /etc/jupyter/
+#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh /usr/local/bin/start-singleuser.sh
+#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh /usr/local/bin/start.sh
+#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh /usr/local/bin/start-notebook.sh
+#ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py
 
 COPY start.sh start-notebook.sh start-singleuser.sh /usr/local/bin/
 COPY jupyter_notebook_config.py /etc/jupyter/
 
+USER root
+RUN chmod a+rx /usr/local/bin/start-notebook.sh
+RUN ls -lah /usr/local/bin/
 # RUN bash /usr/local/bin/start-notebook.sh
 #Copy local files as late as possible to avoid cache busting
 
 # Fix permissions on /etc/jupyter as root
-USER root
+#USER root
 RUN fix-permissions /etc/jupyter/
 RUN find /opt/conda/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
