@@ -109,6 +109,7 @@ EXPOSE 8888
 
 # Configure container startup
 #CMD ["start-notebook.sh"]
+RUN fix-permissions /usr/local/bin/
 RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh -O /usr/local/bin/start-singleuser.sh \
     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh -O /usr/local/bin/start.sh \
     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh -O /usr/local/bin/start-notebook.sh \
