@@ -9,7 +9,7 @@ script:
   - docker build -t geog0111 .
 after_success:
   - docker login -u $DOCKER_USER -p $REGISTRY_PASS
-  - docker tag back $DOCKER_USER/:$TRAVIS_BUILD_NUMBER
+  - docker tag geog0111 $DOCKER_USER/:$TRAVIS_BUILD_NUMBER
   - docker push $DOCKER_USER/geog0111:$TRAVIS_BUILD_NUMBER
-  - docker tag back $DOCKER_USER/geog0111:latest
+  - docker tag geog0111 $DOCKER_USER/geog0111:latest
   - docker push $DOCKER_USER/geog0111:latest
