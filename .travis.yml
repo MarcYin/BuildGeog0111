@@ -10,8 +10,8 @@ after_script:
   - docker images
 deploy:
   provider: script
-    skip_cleanup: true
-    script: 
+  skip_cleanup: true
+  script: 
       - docker login -u $DOCKER_USER -p $REGISTRY_PASS
       - docker tag geog0111 $DOCKER_USER/:$TRAVIS_BUILD_NUMBER
       - docker push $DOCKER_USER/geog0111:$TRAVIS_BUILD_NUMBER
