@@ -43,15 +43,31 @@ RUN apk --update add bash&&\
 #RUN bash  /usr/local/bin/fix-permissions $HOME
 #RUN chmod 0755 $HOME/environment.yml
 
+COPY fix-permissions /usr/local/bin/fix-permissions
+RUN chmod a+rx /usr/local/bin/fix-permissions
 
-COPY environment.yml /root/
-RUN /opt/conda/bin/conda env create -f /root/environment.yml \
+RUN /usr/sbin/adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell /bin/bash \
+    --home "/home/$NB_USER" \
+    --uid "$NB_UID" "$NB_USER" \
+    && chown $NB_USER:$NB_GID  /opt/conda \
+    && /usr/local/bin/fix-permissions $HOME \
+    && /usr/local/bin/fix-permissions $CONDA_DIR
+
+USER $NB_UID
+WORKDIR $HOME
+
+COPY environment.yml $HOME
+RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
     && /opt/conda/bin/conda clean -afy \
-    && find /opt/conda/ -follow -type f -name '*.a' -delete \
-    && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
+
 
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
+
+USER $NB_UID
+WORKDIR $HOME
 RUN jupyter contrib nbextension install --user
 # enable the Nbextensions
 RUN jupyter nbextension enable contrib_nbextensions_help_item/main
@@ -78,29 +94,20 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
     jupyter lab build && \
         jupyter lab clean && \
         jlpm cache clean && \
-        npm cache clean --force && \
-        rm -rf /root/.node-gyp && \
-        rm -rf /root/.local
+        npm cache clean --force
 
-COPY fix-permissions /usr/local/bin/fix-permissions
-RUN chmod a+rx /usr/local/bin/fix-permissions
-
-RUN /usr/sbin/adduser \
-    --disabled-password \
-    --gecos "" \
-    --shell /bin/bash \
-    --home "/home/$NB_USER" \
-    --uid "$NB_UID" "$NB_USER" \
-    && chown $NB_USER:$NB_GID  /opt/conda \
-    && /usr/local/bin/fix-permissions $HOME \
-    && /usr/local/bin/fix-permissions $CONDA_DIR
+USER root
+RUN find /opt/conda/ -follow -type f -name '*.a' -delete \
+    && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
+    && find /opt/conda/ -follow -type f -name '*.js.map' -delete\
+    && rm -rf /root/.node-gyp\
+    && rm -rf /root/.local
 
 USER $NB_UID
 WORKDIR $HOME   
 # Clone the git repo
 RUN git clone https://github.com/profLewis/geog0111-core.git
 WORKDIR $HOME/geog0111-core/notebooks
-
 # Run jupyter notebook
 #RUN jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
 RUN jupyter trust *ipynb 
