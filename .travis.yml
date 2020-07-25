@@ -7,11 +7,12 @@ env:
   global:
     - IMAGE_NAME=f0xy/geog0111
     - REGISTRY_USER=f0xy
-    - version="0.0.1"
 
-before_install:
+before_script:
+  - version="0.0.1"
+script:
   - docker build -t geog0111 .
-  - docker run -d -p 127.0.0.1:80:4567 geog0111 /bin/sh -c "cd /root/; ls -lah"
+  - docker run -d -p 127.0.0.1:80:4567 geog0111 /bin/sh -c "ls -lah"
 after_script:
   - docker images
 before_deploy:
