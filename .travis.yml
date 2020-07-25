@@ -1,5 +1,4 @@
 language: ruby
-sudo: required
 services:
   - docker
 before_script:
@@ -10,10 +9,9 @@ after_script:
   - docker images
 deploy:
   provider: script
-  skip_cleanup: true
   script: 
       - docker login -u $DOCKER_USER -p $REGISTRY_PASS
-      - docker tag geog0111 $DOCKER_USER/:$TRAVIS_BUILD_NUMBER
-      - docker push $DOCKER_USER/geog0111:$TRAVIS_BUILD_NUMBER
+      - docker tag geog0111 $DOCKER_USER/:0.0.1
+      - docker push $DOCKER_USER/geog0111:0.0.1
       - docker tag geog0111 $DOCKER_USER/geog0111:latest
       - docker push $DOCKER_USER/geog0111:latest
