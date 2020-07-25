@@ -2,43 +2,58 @@
 # at https://github.com/jgomezdans/geog_docker/blob/master/Dockerfile
 # and Lewis 
 # at https://github.com/profLewis/geog0111-core
-FROM continuumio/miniconda3:4.8.2-alpine
+FROM continuumio/miniconda3
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
-
-# add time
-RUN apk add tzdata \
-    && ls /usr/share/zoneinfo/Europe/London \
-    && cp /usr/share/zoneinfo/Europe/London /etc/localtime \
-    && echo "Europe/London" >  /etc/timezone \
-    && date \
-    && apk del tzdata
-
 ARG NB_USER="Jeremy"
 ARG NB_UID="1000"
 ARG NB_GID="100"
 
 
-ENV SHELL=/bin/bash \
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update \
+ && apt-get install -yq --no-install-recommends \
+    sudo \
+    locales \
+    fonts-liberation \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+# Configure environment
+ENV CONDA_DIR=/opt/conda \
+    SHELL=/bin/bash \
     NB_USER=$NB_USER \
     NB_UID=$NB_UID \
     NB_GID=$NB_GID \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
+    LC_ALL=en_GB.UTF-8 \
+    LANG=en_GB.UTF-8 \
+    LANGUAGE=en_GB.UTF-8
 ENV PATH=$CONDA_DIR/bin:$PATH \
     HOME=/home/$NB_USER
 
-# name of envrionment
-RUN apk --update add bash&&\
-    echo "### Cleanup unneeded files" && \
-    rm -rf /usr/include/c++/*/java && \
-    rm -rf /usr/include/c++/*/javax && \
-    rm -rf /usr/include/c++/*/gnu/awt && \
-    rm -rf /usr/include/c++/*/gnu/classpath && \
-    rm -rf /usr/include/c++/*/gnu/gcj && \
-    rm -rf /usr/include/c++/*/gnu/java && \
-    rm -rf /usr/include/c++/*/gnu/javax
+# Copy a script that we will use to correct permissions after running certain commands
+COPY fix-permissions /usr/local/bin/fix-permissions
+RUN chmod a+rx /usr/local/bin/fix-permissions
+
+# Enable prompt color in the skeleton .bashrc before creating the default NB_USER
+RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc
+
+# Create NB_USER wtih name jovyan user with UID=1000 and in the 'users' group
+# and make sure these dirs are writable by the `users` group.
+RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su && \
+    sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers && \
+    sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers && \
+    useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+    mkdir -p $CONDA_DIR && \
+    chown $NB_USER:$NB_GID $CONDA_DIR && \
+    chmod g+w /etc/passwd && \
+    fix-permissions $HOME && \
+    fix-permissions $CONDA_DIR
+
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 #RUN bash  /usr/local/bin/fix-permissions $HOME
 #RUN chmod 0755 $HOME/environment.yml
@@ -46,44 +61,32 @@ RUN apk --update add bash&&\
 COPY fix-permissions /usr/local/bin/fix-permissions
 RUN chmod a+rx /usr/local/bin/fix-permissions
 
-RUN /usr/sbin/adduser \
-    --disabled-password \
-    --gecos "" \
-    --shell /bin/bash \
-    --home "/home/$NB_USER" \
-    --uid "$NB_UID" "$NB_USER" \
-    && chown $NB_USER:$NB_GID  /opt/conda \
-    && /usr/local/bin/fix-permissions $HOME \
-    && /usr/local/bin/fix-permissions $CONDA_DIR
-
 USER $NB_UID
 WORKDIR $HOME
 
 COPY environment.yml $HOME
 RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
-    && /opt/conda/bin/conda clean -afy \
+    && /opt/conda/bin/conda clean -afy
 
-
+#RUN echo "source activate uclgeog" > ~/.bashrc
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
-
-USER $NB_UID
-WORKDIR $HOME
-RUN jupyter contrib nbextension install --user
+#RUN echo $PATH
 # enable the Nbextensions
-RUN jupyter nbextension enable contrib_nbextensions_help_item/main
-RUN jupyter nbextension enable autosavetime/main
-RUN jupyter nbextension enable codefolding/main
-RUN jupyter nbextension enable code_font_size/code_font_size
-RUN jupyter nbextension enable code_prettify/code_prettify
-RUN jupyter nbextension enable collapsible_headings/main
-RUN jupyter nbextension enable comment-uncomment/main
-RUN jupyter nbextension enable equation-numbering/main
-RUN jupyter nbextension enable execute_time/ExecuteTime
-RUN jupyter nbextension enable gist_it/main
-RUN jupyter nbextension enable hide_input/main
-RUN jupyter nbextension enable spellchecker/main
-RUN jupyter nbextension enable toc2/main
-RUN jupyter nbextension enable toggle_all_line_numbers/main
+RUN jupyter contrib nbextension install --user \
+    && jupyter nbextension enable contrib_nbextensions_help_item/main \
+    && jupyter nbextension enable autosavetime/main \
+    && jupyter nbextension enable codefolding/main \
+    && jupyter nbextension enable code_font_size/code_font_size \ 
+    && jupyter nbextension enable code_prettify/code_prettify \
+    && jupyter nbextension enable collapsible_headings/main \
+    && jupyter nbextension enable comment-uncomment/main \
+    && jupyter nbextension enable equation-numbering/main \
+    && jupyter nbextension enable execute_time/ExecuteTime \
+    && jupyter nbextension enable gist_it/main \
+    && jupyter nbextension enable hide_input/main \
+    && jupyter nbextension enable spellchecker/main \
+    && jupyter nbextension enable toc2/main \
+    && jupyter nbextension enable toggle_all_line_numbers/main
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV JUPYTER_ENABLE_LAB=yes
 RUN jupyter labextension install nbdime-jupyterlab --no-build && \
