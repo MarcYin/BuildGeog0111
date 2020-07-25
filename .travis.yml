@@ -5,7 +5,7 @@ services:
 
 env:
   global:
-    - IMAGE_NAME=f0xy/geog0111
+    - IMAGE_NAME=geog0111
     - REGISTRY_USER=f0xy
 
 before_script:
