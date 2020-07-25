@@ -109,13 +109,11 @@ EXPOSE 8888
 
 # Configure container startup
 #CMD ["start-notebook.sh"]
-RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh
-RUN bash start-notebook.sh 
-
 RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh -O /usr/local/bin/start-singleuser.sh \
     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh -O /usr/local/bin/start.sh \
     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh -O /usr/local/bin/start-notebook.sh \
     && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py -O /etc/jupyter/jupyter_notebook_config.py
+RUN bash /usr/local/bin/start-notebook.sh
 
 #Copy local files as late as possible to avoid cache busting
 #COPY start.sh start-notebook.sh start-singleuser.sh /usr/local/bin/
