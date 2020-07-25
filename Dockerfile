@@ -2,14 +2,16 @@
 # at https://github.com/jgomezdans/geog_docker/blob/master/Dockerfile
 # and Lewis 
 # at https://github.com/profLewis/geog0111-core
+# and Base Jupyter Notebook Stack
+# at https://github.com/jupyter/docker-stacks/tree/master/base-notebook
 FROM continuumio/miniconda3
 LABEL maintainer="Feng Yin <ucfafyi@ucl.ac.uk>"
 USER root
-ARG NB_USER="Jeremy"
+ARG NB_USER="jeremy"
 ARG NB_UID="1000"
 ARG NB_GID="100"
 
-
+# get extra package
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
  && apt-get install -yq --no-install-recommends \
@@ -18,6 +20,7 @@ RUN apt-get update \
     fonts-liberation \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# set the location to GB
 RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 
@@ -61,16 +64,17 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY fix-permissions /usr/local/bin/fix-permissions
 RUN chmod a+rx /usr/local/bin/fix-permissions
 
+# user the new user to create environment
 USER $NB_UID
 WORKDIR $HOME
 
+# create conda environment and 
+# install required packages
 COPY environment.yml $HOME
 RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
     && /opt/conda/bin/conda clean -afy
 
-#RUN echo "source activate uclgeog" > ~/.bashrc
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
-#RUN echo $PATH
 # enable the Nbextensions
 RUN jupyter contrib nbextension install --user \
     && jupyter nbextension enable contrib_nbextensions_help_item/main \
@@ -97,9 +101,29 @@ RUN jupyter labextension install nbdime-jupyterlab --no-build && \
     jupyter lab build && \
         jupyter lab clean && \
         jlpm cache clean && \
-        npm cache clean --force
+        npm cache clean --force && \
+        rm -rf $HOME/.node-gyp && \
+        rm -rf $HOME/.local
 
+EXPOSE 8888
+
+# Configure container startup
+#CMD ["start-notebook.sh"]
+RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh
+RUN bash start-notebook.sh 
+
+RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-singleuser.sh -O /usr/local/bin/start-singleuser.sh \
+    && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start.sh -O /usr/local/bin/start.sh \
+    && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/start-notebook.sh -O /usr/local/bin/start-notebook.sh \
+    && wget https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/jupyter_notebook_config.py -O /etc/jupyter/jupyter_notebook_config.py
+
+#Copy local files as late as possible to avoid cache busting
+#COPY start.sh start-notebook.sh start-singleuser.sh /usr/local/bin/
+#COPY jupyter_notebook_config.py /etc/jupyter/
+
+# Fix permissions on /etc/jupyter as root
 USER root
+RUN fix-permissions /etc/jupyter/
 RUN find /opt/conda/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete\
