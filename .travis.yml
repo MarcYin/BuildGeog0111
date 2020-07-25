@@ -1,17 +1,28 @@
 language: ruby
 services:
   - docker
+env:
+  global:
+    - IMAGE_NAME=f0xy/geog0111
+    - REGISTRY_USER=f0xy
+
 before_script:
-  - DOCKER_USER=f0xy
+  - version="0.0.1"
+  - docker pull "$IMAGE_NAME" || true
 script:
-  - docker build -t foxy/geog0111 .
+  - docker build --pull --cache-from "$IMAGE_NAME" --tag "$IMAGE_NAME" .
+  - docker run "$IMAGE_NAME"
+
 after_script:
   - docker images
+
+before_deploy:
+  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${version}"
 deploy:
   provider: script
-  script: 
-      - docker login -u $DOCKER_USER -p $REGISTRY_PASS
-      - docker tag foxy/geog0111 foxy/geog0111:0.0.1
-      - docker push foxy/geog0111:0.0.1
-      - docker tag foxy/geog0111 foxy/geog0111:latest
-      - docker push foxy/geog0111:latest
+  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${version}"
+  on:
+    branch: master
+
