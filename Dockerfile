@@ -92,7 +92,7 @@ RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
 
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
 # create Python 3.x environment and link it to jupyter
-RUN python -m ipykernel install --user --name=uclgeog && \
+RUN python -m ipykernel install --user --name=uclgeog \
     && echo "export PATH=\"$CONDA_DIR/envs/uclgeog/bin:${PATH}\"" >> $HOME/.bashrc
 
 # enable the Nbextensions
