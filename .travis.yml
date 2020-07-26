@@ -3,8 +3,8 @@ services:
   - docker
 env:
   global:
-    - IMAGE_NAME=f0xy/geog0111
-    - REGISTRY_USER=f0xy
+    - IMAGE_NAME=marcyin/geog0111
+    - REGISTRY_USER=marcyin
 
 before_script:
   - version="0.0.1"
@@ -16,7 +16,7 @@ after_script:
   - docker images
 
 before_deploy:
-  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - docker login -u "$REGISTRY_USER" -p "$DOCKER_PASS"
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${version}"
 deploy:
