@@ -17,7 +17,23 @@ RUN apt-get update \
  && apt-get install -yq --no-install-recommends \
     sudo \
     locales \
+    build-essential\
+    vim-tiny \
     fonts-liberation \
+    inkscape \
+    jed \
+    libsm6 \
+    libxext-dev \
+    libxrender1 \
+    lmodern \
+    netcat \
+    # ---- nbconvert dependencies ----
+    texlive-xetex \
+    texlive-fonts-recommended \
+    texlive-plain-generic \
+    # ----
+    tzdata \
+    unzip \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # set the location to GB
@@ -75,6 +91,10 @@ RUN /opt/conda/bin/conda env create -f $HOME/environment.yml \
     && /opt/conda/bin/conda clean -afy
 
 ENV PATH /opt/conda/envs/uclgeog/bin:$PATH
+# create Python 3.x environment and link it to jupyter
+RUN python -m ipykernel install --user --name=uclgeog && \
+    && echo "export PATH=\"$CONDA_DIR/envs/uclgeog/bin:${PATH}\"" >> $HOME/.bashrc
+
 # enable the Nbextensions
 RUN jupyter contrib nbextension install --user \
     && jupyter nbextension enable contrib_nbextensions_help_item/main \
@@ -125,7 +145,7 @@ COPY jupyter_notebook_config.py /etc/jupyter/
 
 USER root
 RUN chmod a+rx /usr/local/bin/start-notebook.sh
-RUN ls -lah /usr/local/bin/
+# RUN ls -lah /usr/local/bin/
 # RUN bash /usr/local/bin/start-notebook.sh
 #Copy local files as late as possible to avoid cache busting
 
